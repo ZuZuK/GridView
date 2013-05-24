@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<GridMarkup>
+	
+	<RowDefinitions>
+		<RowDefinition height="25pt"/>
+		<RowDefinition height="15px"/>
+		<RowDefinition/>
+	</RowDefinitions>
+
+	<ColumnDefinitions>
+		<ColumnDefinition width="10dp" />
+		<ColumnDefinition width="*"/>
+		<ColumnDefinition width="auto" />
+		<ColumnDefinition width="2*"/>
+	</ColumnDefinitions>
+	
+</GridMarkup>

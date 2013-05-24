@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+	<declare-styleable name="GridView">
+	  <attr name="grid_markup" format="reference"/>
+	  <attr name="row" format="integer"/>
+	  <attr name="row_span" format="integer"/>
+	  <attr name="column" format="integer"/>
+	  <attr name="column_span" format="integer"/>
+	</declare-styleable>
+</resources>
