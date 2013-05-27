@@ -1,55 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:grid_view="http://schemas.android.com/apk/res-auto"
+    xmlns:grid_view="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
-<Button  
-    android:id="@+id/myButton"
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="@string/hello"/>
-    
-    
+    android:layout_height="fill_parent">
+    <Button
+        android:id="@+id/myButton"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/hello" />
     <touchin.views.GridView
-    	android:layout_width="fill_parent" 
-    	android:layout_height="fill_parent"
-    	grid_view:grid_markup="@xml/main_grid">
-    	
-    	<Button  
-		    android:layout_width="fill_parent" 
-		    android:layout_height="wrap_content" 
-		    android:text="111"
-		    grid_view:row="1"
-		    grid_view:column="0"
-		    grid_view:row_span="2"
-		    grid_view:column_span="2"/>
-		    
-		    <Button  
-		    android:layout_width="fill_parent" 
-		    android:layout_height="wrap_content" 
-		    android:text="111"
-		    grid_view:row="0"
-		    grid_view:column="0"/>
-		    
-		    <Button  
-		    android:layout_width="fill_parent" 
-		    android:layout_height="wrap_content" 
-		    android:text="111"
-		    grid_view:row="0"
-		    grid_view:column="1"
-		    grid_view:column_span="3"/>
-		    
-		    <Button  
-		    android:layout_width="fill_parent" 
-		    android:layout_height="wrap_content" 
-		    android:text="111"
-		    grid_view:row="1"
-		    grid_view:column="3"/>
-		    
-    
+        android:layout_width="300px"
+        android:layout_height="300px"
+        grid_view:grid_markup="@xml/main_grid">
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="111"
+            grid_view:row="0"
+            grid_view:column="0"
+            grid_view:row_span="3" />
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="222"
+            grid_view:row="1"
+            grid_view:column="1"
+            grid_view:row_span="2"
+            grid_view:column_span="2" />
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="333"
+            grid_view:row="0"
+            grid_view:column="2"
+            grid_view:row_span="2"
+            grid_view:column_span="2" />
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="444"
+            grid_view:row="3"
+            grid_view:column="0"
+            grid_view:column_span="4" />
     </touchin.views.GridView>
-    
 </LinearLayout>
-

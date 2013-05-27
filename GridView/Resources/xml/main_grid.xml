@@ -2,16 +2,17 @@
 <GridMarkup>
 	
 	<RowDefinitions>
-		<RowDefinition height="25pt"/>
-		<RowDefinition height="15px"/>
+		<RowDefinition height="*"/>
+		<RowDefinition height="*"/>
+		<RowDefinition height="200px"/>
 		<RowDefinition/>
 	</RowDefinitions>
 
 	<ColumnDefinitions>
-		<ColumnDefinition width="10dp" />
+		<ColumnDefinition/>
+		<ColumnDefinition width="100px"/>
+		<ColumnDefinition width="*" />
 		<ColumnDefinition width="*"/>
-		<ColumnDefinition width="auto" />
-		<ColumnDefinition width="2*"/>
 	</ColumnDefinitions>
 	
 </GridMarkup>

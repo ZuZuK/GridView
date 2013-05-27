@@ -121,6 +121,36 @@ namespace Touchin.Views
 				}
 			}
 
+			public bool IsOnlyInPixelColumns
+			{
+				get
+				{
+					foreach(var column in AssociatedColumns)
+					{
+						if(!column.Length.IsPixel)
+						{
+							return false;
+						}
+					}
+					return true;
+				}
+			}
+
+			public bool IsOnlyInPixelRows
+			{
+				get
+				{
+					foreach(var row in AssociatedRows)
+					{
+						if(!row.Length.IsPixel)
+						{
+							return false;
+						}
+					}
+					return true;
+				}
+			}
+
 			public bool IsInAutoColumn
 			{
 				get
@@ -385,17 +415,21 @@ namespace Touchin.Views
 					for(int j = lp.Row; j < lp.Row + lp.RowSpan && j < _rowDefinitions.Count; j++)
 					{
 						_viewsMeasureInfos[child].AssociatedRows.Add(_rowDefinitions[j]);
+						_rowsInfo[_rowDefinitions[j]].AttachedViews.Add(_viewsMeasureInfos[child]);
 					}
 					for(int j = lp.Column; j < lp.Column + lp.ColumnSpan && j < _columnDefinitions.Count; j++)
 					{
 						_viewsMeasureInfos[child].AssociatedColumns.Add(_columnDefinitions[j]);
+						_columnsInfo[_columnDefinitions[j]].AttachedViews.Add(_viewsMeasureInfos[child]);
 					}
 				}
 
 				bool canMeasureHeight = _viewsMeasureInfos[child].IsInAutoRow
+					|| _viewsMeasureInfos[child].IsOnlyInPixelRows
 					|| (_viewsMeasureInfos[child].IsInStarRow && heightMode == MeasureSpecMode.Unspecified);
 
 				bool canMeasureWidth = _viewsMeasureInfos[child].IsInAutoColumn
+					|| _viewsMeasureInfos[child].IsOnlyInPixelColumns
 					|| (_viewsMeasureInfos[child].IsInStarColumn && widthMode == MeasureSpecMode.Unspecified);
 
 				if(!canMeasureHeight || !canMeasureWidth)
@@ -411,45 +445,47 @@ namespace Touchin.Views
 				child.Measure(childWidthMeasureSpec, childHeightMeasureSpec);
 				_viewsMeasureInfos[child].IsMeasured = true;
 
-				foreach(var info in _columnsInfo)
+				foreach(var column in _viewsMeasureInfos[child].AssociatedColumns)
 				{
+					var info = _columnsInfo[column];
 					if(widthMode == MeasureSpecMode.Unspecified)
 					{
-						if(info.Value.Definition.Length.IsStar
-							&& !(info.Value.IsMeasured && info.Value.Length > child.MeasuredWidth))
+						if(info.Definition.Length.IsStar
+							&& !(info.IsMeasured && info.Length > child.MeasuredWidth))
 						{
-							info.Value.SetLength(child.MeasuredWidth - _viewsMeasureInfos[child].PixelTypeColumnsWidth);
+							info.SetLength(child.MeasuredWidth - _viewsMeasureInfos[child].PixelTypeColumnsWidth);
 							break;
 						}
 					}
 					else
 					{
-						if(info.Value.Definition.Length.IsAuto
-							&& !(info.Value.IsMeasured && info.Value.Length > child.MeasuredWidth))
+						if(info.Definition.Length.IsAuto
+							&& !(info.IsMeasured && info.Length > child.MeasuredWidth))
 						{
-							info.Value.SetLength(child.MeasuredWidth - _viewsMeasureInfos[child].PixelTypeColumnsWidth);
+							info.SetLength(Math.Max(0, child.MeasuredWidth - _viewsMeasureInfos[child].PixelTypeColumnsWidth));
 							break;
 						}
 					}
 				}
 				
-				foreach(var info in _rowsInfo)
+				foreach(var row in _viewsMeasureInfos[child].AssociatedRows)
 				{
+					var info = _rowsInfo[row];
 					if(heightMode == MeasureSpecMode.Unspecified)
 					{
-						if(info.Value.Definition.Length.IsStar
-							&& !(info.Value.IsMeasured && info.Value.Length > child.MeasuredWidth))
+						if(info.Definition.Length.IsStar
+							&& !(info.IsMeasured && info.Length > child.MeasuredWidth))
 						{
-							info.Value.SetLength(child.MeasuredHeight - _viewsMeasureInfos[child].PixelTypeRowsHeight);
+							info.SetLength(Math.Max(0, child.MeasuredHeight - _viewsMeasureInfos[child].PixelTypeRowsHeight));
 							break;
 						}
 					}
 					else
 					{
-						if(info.Value.Definition.Length.IsAuto
-							&& !(info.Value.IsMeasured && info.Value.Length > child.MeasuredWidth))
+						if(info.Definition.Length.IsAuto
+							&& !(info.IsMeasured && info.Length > child.MeasuredWidth))
 						{
-							info.Value.SetLength(child.MeasuredHeight - _viewsMeasureInfos[child].PixelTypeRowsHeight);
+							info.SetLength(child.MeasuredHeight - _viewsMeasureInfos[child].PixelTypeRowsHeight);
 							break;
 						}
 					}
@@ -550,6 +586,121 @@ namespace Touchin.Views
 				}
 			}
 
+			foreach(var columnInfo in _columnsInfo)
+			{
+				if(columnInfo.Value.Definition.Length.IsPixel)
+				{
+					columnInfo.Value.SetLength(columnInfo.Value.Definition.Length.Value);
+				}
+			}
+
+			foreach(var rowInfo in _rowsInfo)
+			{
+				if(rowInfo.Value.Definition.Length.IsPixel)
+				{
+					rowInfo.Value.SetLength(rowInfo.Value.Definition.Length.Value);
+				}
+			}
+
+			bool isAvailableSizeChanged = false;
+			foreach(var columnInfo in _columnsInfo)
+			{
+				if(columnInfo.Value.Definition.Length.IsAuto)
+				{
+					int maxWidth = 0;
+					foreach(var viewInfo in columnInfo.Value.AttachedViews)
+					{
+						if(!viewInfo.IsMeasured)
+						{
+							int measureHeight = 0;
+
+							foreach(var row in viewInfo.AssociatedRows)
+							{
+								if(_rowsInfo[row].IsMeasured)
+								{
+									measureHeight += (int)_rowsInfo[row].Length;
+								}
+							}
+							viewInfo.View.Measure(MeasureSpec.MakeMeasureSpec(width, MeasureSpecMode.AtMost),
+							                      MeasureSpec.MakeMeasureSpec(measureHeight, MeasureSpecMode.AtMost));
+						}
+						maxWidth = Math.Max(maxWidth, viewInfo.View.MeasuredWidth);
+					}
+					columnInfo.Value.SetLength(maxWidth);
+					availableWidth -= maxWidth;
+					isAvailableSizeChanged = true;
+				}
+			}
+
+			if(isAvailableSizeChanged && heightMode != MeasureSpecMode.Unspecified)
+			{
+				foreach(var column in _columnsInfo)
+				{
+					if(column.Value.Definition.Length.IsStar)
+					{
+						if(availableWidth > 0)
+						{
+							column.Value.SetLength((column.Value.Definition.Length.Value/_widthStarSum)*availableWidth);
+						}
+						else
+						{
+							column.Value.SetLength(0);
+						}
+					}
+				}
+			}
+			
+			isAvailableSizeChanged = false;
+			foreach(var rowInfo in _rowsInfo)
+			{
+				if(rowInfo.Value.Definition.Length.IsAuto)
+				{
+					int maxHeight = 0;
+					foreach(var viewInfo in rowInfo.Value.AttachedViews)
+					{
+						if(!viewInfo.IsMeasured)
+						{
+							int measureWidth = 0;
+
+							foreach(var column in viewInfo.AssociatedColumns)
+							{
+								if(_columnsInfo[column].IsMeasured)
+								{
+									measureWidth += (int)_columnsInfo[column].Length;
+								}
+							}
+							viewInfo.View.Measure(MeasureSpec.MakeMeasureSpec(measureWidth, MeasureSpecMode.AtMost),
+							                      MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.AtMost));
+						}
+						maxHeight = Math.Max(maxHeight, viewInfo.View.MeasuredHeight);
+					}
+					rowInfo.Value.SetLength(maxHeight);
+					availableWidth -= maxHeight;
+					isAvailableSizeChanged = true;
+				}
+			}
+
+			if(isAvailableSizeChanged && heightMode != MeasureSpecMode.Unspecified)
+			{
+				if(availableHeight > 0)
+				{
+					foreach(var row in _rowsInfo)
+					{
+						if(row.Value.Definition.Length.IsStar)
+						{
+							if(availableHeight > 0)
+							{
+								row.Value.SetLength((row.Value.Definition.Length.Value/_heightStarSum)*availableHeight);
+							}
+							else
+							{
+								row.Value.SetLength(0);
+							}
+						}
+					}
+				}
+			}
+
 			// TODO - shift in *apa* scheme
 			/*if(widthMode != MeasureSpecMode.Unspecified)
 			{
@@ -583,22 +734,6 @@ namespace Touchin.Views
 					}
 				}
 			}*/
-
-			foreach(var columnInfo in _columnsInfo)
-			{
-				if(columnInfo.Value.Definition.Length.IsPixel)
-				{
-					columnInfo.Value.SetLength(columnInfo.Value.Definition.Length.Value);
-				}
-			}
-
-			foreach(var rowInfo in _rowsInfo)
-			{
-				if(rowInfo.Value.Definition.Length.IsPixel)
-				{
-					rowInfo.Value.SetLength(rowInfo.Value.Definition.Length.Value);
-				}
-			}
 
 			// remove all views that removed before onMeasure
 			// TODO: do this while overriding removing
